@@ -1,0 +1,93 @@
+type Book
+  @model
+  @auth(
+    rules: [
+      # allow owners to create, read, update, delete books
+      { allow: owner }
+      # allow all users (not authenticated) to view books
+      { allow: public, provider: apiKey, operations: [read] }
+    ]
+  ) {
+  id: ID!
+  title: String!
+  description: String
+}
+
+type Account @model @auth(rules: [{ allow: public, operations: [read] }, { allow: owner }]) {
+  id: ID!
+  name: String!
+  userId: String
+  billboards: [Billboard] @hasMany
+  categories: [Category] @hasMany
+  sizes: [Size] @hasMany
+  colors: [Color] @hasMany
+  products: [Product] @hasMany
+  orders: [Order] @hasMany
+}
+
+type Billboard @model @auth(rules: [{ allow: public, operations: [read] }, { allow: owner }]) {
+  id: ID!
+  label: String
+  imageUrl: String
+  account: Account @belongsTo
+  categories: [Category] @hasMany
+}
+
+type Category @model @auth(rules: [{ allow: public, operations: [read] }, { allow: owner }]) {
+  id: ID!
+  name: String!
+  account: Account @belongsTo
+  billboard: Billboard @belongsTo
+  products: [Product] @hasMany
+}
+
+type Size @model @auth(rules: [{ allow: public, operations: [read] }, { allow: owner }]) {
+  id: ID!
+  name: String
+  value: String
+  account: Account @belongsTo
+  products: [Product] @hasMany
+}
+
+type Color @model @auth(rules: [{ allow: public, operations: [read] }, { allow: owner }]) {
+  id: ID!
+  name: String
+  value: String
+  account: Account @belongsTo
+  products: [Product] @hasMany
+}
+
+type Product @model @auth(rules: [{ allow: public, operations: [read] }, { allow: owner }]) {
+  id: ID!
+  name: String!
+  price: Float
+  isFeatured: Boolean
+  isArchived: Boolean
+  account: Account @belongsTo
+  category: Category @belongsTo
+  size: Size @belongsTo
+  color: Color @belongsTo
+  images: [Image] @hasMany
+  orderItems: [OrderItem] @hasMany
+}
+
+type Image @model @auth(rules: [{ allow: public, operations: [read] }, { allow: owner }]) {
+  id: ID!
+  product: Product @belongsTo
+  url: String!
+}
+
+type Order @model @auth(rules: [{ allow: public }, { allow: owner, operations: [read] }]) {
+  id: ID!
+  account: Account @belongsTo
+  orderItems: [OrderItem] @hasMany
+  isPaid: Boolean
+  phone: String
+  address: String
+}
+
+type OrderItem @model @auth(rules: [{ allow: public }, { allow: owner, operations: [read] }]) {
+  id: ID!
+  order: Order @belongsTo
+  product: Product @belongsTo
+}
